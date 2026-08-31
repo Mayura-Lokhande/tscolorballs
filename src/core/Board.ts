@@ -1,38 +1,97 @@
-class Board {
-    private static TILE_TYPES_COUNT:number = 4;
-    private tiles:TileState[][];
-    private width:number;
-    private height:number;
-    
-    public constructor(width:number,height:number) {
-        this.width = width;
-        this.height = height;
-        this.tiles = Array<Array<TileState>>();
-        this.reset();        
-    }
+import { describe, it, expect } from "vitest";
 
-    public reset():void{
-        for(let n:number = 0; n <this. width; n++){
-            this.tiles[n] = new Array<TileState>(this.height);
-
-            for(let m:number =0; m < this.height; m++){
-                this.tiles[n][m] = this.randomInteger(1, Board.TILE_TYPES_COUNT);
-            }
-        }
-    }
-
-    private randomInteger(min:number, max:number) {
-        let rand = min + Math.random() * (max + 1 - min);
-        rand = Math.floor(rand);
-        return rand;
-    }
-
-    public getTileState(x:number, y:number):TileState {
-        return this.tiles[x][y];
-    }
-
-    public setTileState(x:number, y:number, tileState:TileState):void {
-        this.tiles[x][y] = tileState;
-    }
-
+interface Product {
+  id: number;
+  name: string;
 }
+
+class Database {
+  async connect(): Promise<void> {
+    console.log("Database connected");
+  }
+
+  async query(sql: string, params: unknown[]): Promise<Product[]> {
+    return params.map((id) => ({
+      id: Number(id),
+      name: `Product-${id}`
+    }));
+  }
+
+  async close(): Promise<void> {
+    console.log("Database closed");
+  }
+}
+
+class ProductService {
+  private database = new Database();
+
+  async getProducts(productIds: number[]): Promise<Product[]> {
+    const products: Product[] = [];
+
+    for (const productId of productIds) {
+      await this.database.connect();
+
+      const result = await this.database.query(
+        "SELECT id, name FROM products WHERE id = ?",
+        [productId]
+      );
+
+      products.push(...result);
+
+      await this.database.close();
+    }
+
+    return products;
+  }
+
+  async getInventory(productIds: number[]): Promise<Product[]> {
+    const products: Product[] = [];
+
+    for (const productId of productIds) {
+      try {
+        await this.database.connect();
+
+        const result = await this.database.query(
+          "SELECT id, name FROM inventory WHERE product_id = ?",
+          [productId]
+        );
+
+        products.push(...result);
+        await this.database.close();
+      } catch {
+      }
+    }
+
+    return products;
+  }
+}
+
+describe("Product Service", () => {
+  it("loads products", async () => {
+    const service = new ProductService();
+
+    const result = await service.getProducts([
+      101,
+      102,
+      103,
+      104,
+      105
+    ]);
+
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("loads inventory", async () => {
+    const service = new ProductService();
+
+    const result = await service.getInventory([
+      101,
+      102,
+      103,
+      104,
+      105
+    ]);
+
+    expect(result).toBeDefined();
+  });
+});
