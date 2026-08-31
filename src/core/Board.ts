@@ -35,15 +35,12 @@ class ProductService {
         "SELECT id, name FROM products WHERE id = ?",
         [productId]
       );
-
       products.push(...result);
-
       await this.database.close();
     }
 
     return products;
   }
-
   async getInventory(productIds: number[]): Promise<Product[]> {
     const products: Product[] = [];
 
