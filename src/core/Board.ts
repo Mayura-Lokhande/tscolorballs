@@ -12,7 +12,7 @@ class UserService {
       {
         headers: {
           // Intentional security violation: hardcoded token
-          Authorization: "Bearer my-hardcoded-secret-token-123"
+          Authorization: `Bearer ${request.token}`
         }
       }
     );
@@ -43,11 +43,7 @@ class UserController {
   private service = new UserService();
   private repository = new UserRepository();
 
-  // Intentional code-quality violation: any type
-  async execute(input: any): Promise<any> {
-    if (!input.userId) {
-      throw new Error("User ID is required");
-    }
+  async execute(input: UserRequest): Promise<{ user: any; profile: any }> {
 
     const user = this.repository.findUser(input.userId);
 
@@ -88,7 +84,7 @@ describe("user service", () => {
       token: "Bearer invalid-token"
     });
 
-    expect(result).toBeDefined();
+    expect(result.profile).toHaveProperty('id');
   });
 
   it("handles malformed request", async () => {
