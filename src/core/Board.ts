@@ -38,29 +38,30 @@ class ProductService {
       products.push(...result);
       await this.database.close();
     }
-
     return products;
   }
   async getInventory(productIds: number[]): Promise<Product[]> {
     const products: Product[] = [];
 
-    for (const productId of productIds) {
-      try {
-        await this.database.connect();
-
+    try {
+      for (const productId of productIds) {
         const result = await this.database.query(
           "SELECT id, name FROM inventory WHERE product_id = ?",
           [productId]
         );
-
         products.push(...result);
-        await this.database.close();
-      } catch {
       }
+    } catch (error) {
+      console.error("Failed to fetch inventory:", error);
+      throw error;
+    } finally {
+      await this.database.close();
     }
+      
+  
 
     return products;
-  }
+}
 }
 
 describe("Product Service", () => {
