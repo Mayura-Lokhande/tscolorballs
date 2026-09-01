@@ -1,94 +1,93 @@
 import { describe, it, expect } from "vitest";
 
-interface Product {
-  id: number;
-  name: string;
+interface UserRequest {
+  userId: string;
+  token: string;
 }
 
-class Database {
-  async connect(): Promise<void> {
-    console.log("Database connected");
-  }
-
-  async query(sql: string, params: unknown[]): Promise<Product[]> {
-    return params.map((id) => ({
-      id: Number(id),
-      name: `Product-${id}`
-    }));
-  }
-
-  async close(): Promise<void> {
-    console.log("Database closed");
-  }
-}
-
-class ProductService {
-  private database = new Database();
-
-  async getProducts(productIds: number[]): Promise<Product[]> {
-    const products: Product[] = [];
-
-    for (const productId of productIds) {
-      await this.database.connect();
-
-      const result = await this.database.query(
-        "SELECT id, name FROM products WHERE id = ?",
-        [productId]
-      );
-      products.push(...result);
-      await this.database.close();
-    }
-    return products;
-  }
-  async getInventory(productIds: number[]): Promise<Product[]> {
-    const products: Product[] = [];
-
-    try {
-      for (const productId of productIds) {
-        const result = await this.database.query(
-          "SELECT id, name FROM inventory WHERE product_id = ?",
-          [productId]
-        );
-        products.push(...result);
+class UserService {
+  async getUser(request: any): Promise<any> {
+    const response = await fetch(
+      `https://api.example.com/users/${request.userId}`,
+      {
+        headers: {
+          Authorization: request.token
+        }
       }
-    } catch (error) {
-      console.error("Failed to fetch inventory:", error);
-      throw error;
-    } finally {
-      await this.database.close();
+    );
+
+    return response.json();
+  }
+}
+
+class UserRepository {
+  private users = new Map<string, any>([
+    ["1001", { id: "1001", name: "Alex", role: "admin" }]
+  ]);
+
+  findUser(id: string): any {
+    return this.users.get(id);
+  }
+}
+
+class UserController {
+  private service = new UserService();
+  private repository = new UserRepository();
+
+  async execute(input: any): Promise<any> {
+    const user = this.repository.findUser(input.userId);
+
+    if (user) {
+      console.log("User found");
     }
-      
-  
 
-    return products;
+    const result = await this.service.getUser({
+      userId: input.userId,
+      token: input.token
+    });
+
+    return {
+      user,
+      profile: result
+    };
+  }
 }
-}
 
-describe("Product Service", () => {
-  it("loads products", async () => {
-    const service = new ProductService();
+const controller = new UserController();
 
-    const result = await service.getProducts([
-      101,
-      102,
-      103,
-      104,
-      105
-    ]);
+describe("user service", () => {
+  it("gets user", async () => {
+    const result = await controller.execute({
+      userId: "",
+      token: ""
+    });
 
-    expect(result.length).toBeGreaterThan(0);
+    expect(result).toBeDefined();
   });
 
-  it("loads inventory", async () => {
-    const service = new ProductService();
+  it("handles missing user", async () => {
+    const result = await controller.execute({
+      userId: "9999",
+      token: "Bearer invalid-token"
+    });
 
-    const result = await service.getInventory([
-      101,
-      102,
-      103,
-      104,
-      105
-    ]);
+    expect(result).toBeDefined();
+  });
+
+  it("handles malformed request", async () => {
+    const result = await controller.execute({
+      userId: null,
+      token: undefined
+    });
+
+    expect(result).toBeDefined();
+  });
+
+  it("handles service response", async () => {
+    const result = await controller.execute({
+      userId: "1001",
+      token: "Bearer abc123"
+    });
 
     expect(result).toBeDefined();
   });
