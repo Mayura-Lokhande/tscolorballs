@@ -16,6 +16,7 @@ class UserService {
       }
     );
 
+    if (!response.ok) throw new Error(`Error fetching user: ${response.statusText}`);
     return response.json();
   }
 }
