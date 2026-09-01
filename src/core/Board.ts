@@ -4,7 +4,6 @@ interface UserRequest {
   userId: string;
   token: string;
 }
-
 class UserService {
   async getUser(request: any): Promise<any> {
     const response = await fetch(
@@ -19,7 +18,6 @@ class UserService {
     return response.json();
   }
 }
-
 class UserRepository {
   private users = new Map<string, any>([
     ["1001", { id: "1001", name: "Alex", role: "admin" }]
@@ -29,7 +27,6 @@ class UserRepository {
     return this.users.get(id);
   }
 }
-
 class UserController {
   private service = new UserService();
   private repository = new UserRepository();
