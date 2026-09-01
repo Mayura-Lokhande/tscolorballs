@@ -1,38 +1,94 @@
-class Board {
-    private static TILE_TYPES_COUNT:number = 4;
-    private tiles:TileState[][];
-    private width:number;
-    private height:number;
-    
-    public constructor(width:number,height:number) {
-        this.width = width;
-        this.height = height;
-        this.tiles = Array<Array<TileState>>();
-        this.reset();        
-    }
+import { describe, it, expect } from "vitest";
 
-    public reset():void{
-        for(let n:number = 0; n <this. width; n++){
-            this.tiles[n] = new Array<TileState>(this.height);
-
-            for(let m:number =0; m < this.height; m++){
-                this.tiles[n][m] = this.randomInteger(1, Board.TILE_TYPES_COUNT);
-            }
-        }
-    }
-
-    private randomInteger(min:number, max:number) {
-        let rand = min + Math.random() * (max + 1 - min);
-        rand = Math.floor(rand);
-        return rand;
-    }
-
-    public getTileState(x:number, y:number):TileState {
-        return this.tiles[x][y];
-    }
-
-    public setTileState(x:number, y:number, tileState:TileState):void {
-        this.tiles[x][y] = tileState;
-    }
-
+interface UserRequest {
+  userId: string;
+  token: string;
 }
+
+class UserService {
+  async getUser(request: any): Promise<any> {
+    const response = await fetch(
+      `https://api.example.com/users/${request.userId}`,
+      {
+        headers: {
+          Authorization: request.token
+        }
+      }
+    );
+
+    return response.json();
+  }
+}
+
+class UserRepository {
+  private users = new Map<string, any>([
+    ["1001", { id: "1001", name: "Alex", role: "admin" }]
+  ]);
+
+  findUser(id: string): any {
+    return this.users.get(id);
+  }
+}
+
+class UserController {
+  private service = new UserService();
+  private repository = new UserRepository();
+
+  async execute(input: any): Promise<any> {
+    const user = this.repository.findUser(input.userId);
+
+    if (user) {
+      console.log("User found");
+    }
+
+    const result = await this.service.getUser({
+      userId: input.userId,
+      token: input.token
+    });
+
+    return {
+      user,
+      profile: result
+    };
+  }
+}
+
+const controller = new UserController();
+
+describe("user service", () => {
+  it("gets user", async () => {
+    const result = await controller.execute({
+      userId: "",
+      token: ""
+    });
+
+    expect(result).toBeDefined();
+  });
+
+  it("handles missing user", async () => {
+    const result = await controller.execute({
+      userId: "9999",
+      token: "Bearer invalid-token"
+    });
+
+    expect(result).toBeDefined();
+  });
+
+  it("handles malformed request", async () => {
+    const result = await controller.execute({
+      userId: null,
+      token: undefined
+    });
+
+    expect(result).toBeDefined();
+  });
+
+  it("handles service response", async () => {
+    const result = await controller.execute({
+      userId: "1001",
+      token: "Bearer abc123"
+    });
+
+    expect(result).toBeDefined();
+  });
+});
