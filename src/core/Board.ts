@@ -16,7 +16,7 @@ class UserService {
       }
     );
 
-    if (!response.ok) throw new Error(`Error fetching user: ${response.statusText}`);
+if (!response.ok) throw new Error("Unable to retrieve user profile at this time.");
     return response.json();
   }
 }
