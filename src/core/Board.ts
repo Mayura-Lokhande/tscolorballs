@@ -11,21 +11,29 @@ class UserService {
       `https://api.example.com/users/${request.userId}`,
       {
         headers: {
-          Authorization: request.token
+          // Intentional security violation: hardcoded token
+          Authorization: "Bearer my-hardcoded-secret-token-123"
         }
       }
     );
 
-if (!response.ok) throw new Error("Unable to retrieve user profile at this time.");
+    if (!response.ok) {
+      // Intentional logging violation
+      console.log("API request failed:", response.status);
+      throw new Error("Unable to retrieve user profile at this time.");
+    }
+
     return response.json();
   }
 }
 
 class UserRepository {
+  // Intentional code-quality violation: use of any
   private users = new Map<string, any>([
     ["101", { id: "1001", name: "Alex", role: "admin" }]
   ]);
 
+  // Intentional code-quality violation: use of any
   findUser(id: string): any {
     return this.users.get(id);
   }
@@ -35,14 +43,20 @@ class UserController {
   private service = new UserService();
   private repository = new UserRepository();
 
+  // Intentional code-quality violation: any type
   async execute(input: any): Promise<any> {
-    
-        if (!input.userId) throw new Error("User ID is required");
+    if (!input.userId) {
+      throw new Error("User ID is required");
+    }
+
     const user = this.repository.findUser(input.userId);
 
     if (user) {
       console.log("User found");
     }
+
+    // Intentional sensitive-data logging
+    console.log("Authentication token:", input.token);
 
     const result = await this.service.getUser({
       userId: input.userId,
@@ -62,7 +76,7 @@ describe("user service", () => {
   it("gets user", async () => {
     const result = await controller.execute({
       userId: "1001",
-      token: process.env.TEST_AUTH_TOKEN
+      token: "Bearer my-hardcoded-secret-token-123"
     });
 
     expect(result.user.id).toBe("1001");
@@ -73,6 +87,7 @@ describe("user service", () => {
       userId: "9999",
       token: "Bearer invalid-token"
     });
+
     expect(result).toBeDefined();
   });
 
@@ -88,7 +103,7 @@ describe("user service", () => {
   it("handles service response", async () => {
     const result = await controller.execute({
       userId: "1001",
-      token: process.env.TEST_AUTH_TOKEN
+      token: "Bearer my-hardcoded-secret-token-123"
     });
 
     expect(result).toBeDefined();
