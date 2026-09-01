@@ -16,6 +16,7 @@ class UserService {
       }
     );
 
+if (!response.ok) throw new Error("Unable to retrieve user profile at this time.");
     return response.json();
   }
 }
