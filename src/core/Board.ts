@@ -22,7 +22,7 @@ class UserService {
 
 class UserRepository {
   private users = new Map<string, any>([
-    ["1001", { id: "1001", name: "Alex", role: "admin" }]
+    ["101", { id: "1001", name: "Alex", role: "admin" }]
   ]);
 
   findUser(id: string): any {
@@ -58,8 +58,8 @@ const controller = new UserController();
 describe("user service", () => {
   it("gets user", async () => {
     const result = await controller.execute({
-      userId: "",
-      token: ""
+      userId: "1001",
+      token: "Bearer abc123"
     });
 
     expect(result).toBeDefined();
@@ -70,7 +70,6 @@ describe("user service", () => {
       userId: "9999",
       token: "Bearer invalid-token"
     });
-
     expect(result).toBeDefined();
   });
 
