@@ -6,7 +6,7 @@ interface UserRequest {
 }
 
 class UserService {
-  async getUser(request: any): Promise<any> {
+  async getUser(request: UserRequest): Promise<any> {
     const response = await fetch(
       `https://api.example.com/users/${request.userId}`,
       {
@@ -35,6 +35,8 @@ class UserController {
   private repository = new UserRepository();
 
   async execute(input: any): Promise<any> {
+    
+        if (!input.userId) throw new Error("User ID is required");
     const user = this.repository.findUser(input.userId);
 
     if (user) {
@@ -59,10 +61,10 @@ describe("user service", () => {
   it("gets user", async () => {
     const result = await controller.execute({
       userId: "1001",
-      token: "Bearer abc123"
+      token: process.env.TEST_AUTH_TOKEN
     });
 
-    expect(result).toBeDefined();
+    expect(result.user.id).toBe("1001");
   });
 
   it("handles missing user", async () => {
@@ -85,7 +87,7 @@ describe("user service", () => {
   it("handles service response", async () => {
     const result = await controller.execute({
       userId: "1001",
-      token: "Bearer abc123"
+      token: process.env.TEST_AUTH_TOKEN
     });
 
     expect(result).toBeDefined();
