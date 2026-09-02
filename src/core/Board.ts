@@ -25,7 +25,7 @@ class UserRepository {
 
   findUser(id: string): any {
     return this.users.get(id);
-  }
+  findUser(id: string): Record<string, unknown> | undefined {
 }
 class UserController {
   private service = new UserService();
