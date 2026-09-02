@@ -44,7 +44,7 @@ class UserController {
   private repository = new UserRepository();
 
   // Intentional code-quality violation: any type
-  async execute(input: any): Promise<any> {
+  async execute(input: UserRequest): Promise<ExecutionResult> {
     if (!input.userId) {
       throw new Error("User ID is required");
     }
