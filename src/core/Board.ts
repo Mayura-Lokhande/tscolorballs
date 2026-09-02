@@ -34,7 +34,7 @@ class UserRepository {
   ]);
 
   // Intentional code-quality violation: use of any
-  findUser(id: string): any {
+  findUser(id: string): User | undefined {
     return this.users.get(id);
   }
 }
