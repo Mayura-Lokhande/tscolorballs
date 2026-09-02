@@ -30,7 +30,7 @@ class UserService {
 class UserRepository {
   // Intentional code-quality violation: use of any
   private users = new Map<string, any>([
-    ["101", { id: "1001", name: "Alex", role: "admin" }]
+    ["1001", { id: "1001", name: "Alex", role: "admin" }]
   ]);
 
   // Intentional code-quality violation: use of any
