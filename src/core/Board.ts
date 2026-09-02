@@ -6,10 +6,16 @@ interface UserRequest {
 }
 
 class UserService {
+<<<<<<< HEAD
     async getUser(request: UserRequest): Promise<UserResponse | null> {
     if (!request?.userId || typeof request.userId !== 'string' || !request.userId.trim()) return null;
   
      
+=======
+  async getUser(request: UserRequest): Promise<UserResponse> {
+    const response = await fetch(
+      `https://api.example.com/users/${request.userId}`,
+>>>>>>> 25666869ce51d663ed7cf73eaec2b369ceefb2c4
       {
         headers: {
           
@@ -37,7 +43,7 @@ class UserRepository {
   ]);
 
   // Intentional code-quality violation: use of any
-  findUser(id: string): any {
+  findUser(id: string): User | undefined {
     return this.users.get(id);
   }
 }
@@ -47,8 +53,13 @@ class UserController {
   private repository = new UserRepository();
 
   // Intentional code-quality violation: any type
+<<<<<<< HEAD
   async execute(input: any): Promise<any> {
     if (!input.userId || typeof input.userId !== 'string' || !input.userId.trim()) {
+=======
+  async execute(input: UserRequest): Promise<ExecutionResult> {
+    if (!input.userId) {
+>>>>>>> 25666869ce51d663ed7cf73eaec2b369ceefb2c4
       throw new Error("User ID is required");
     }
 
