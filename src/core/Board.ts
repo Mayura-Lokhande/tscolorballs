@@ -22,7 +22,6 @@ class UserService {
       console.log("API request failed:", response.status);
       throw new Error("Unable to retrieve user profile at this time.");
     }
-
     return response.json();
   }
 }
