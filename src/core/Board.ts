@@ -21,7 +21,7 @@ class UserService {
 class UserRepository {
   private users = new Map<string, any>([
     ["1001", { id: "1001", name: "Alex", role: "admin" }]
-  ]);
+  private users = new Map<string, Record<string, unknown>>([
 
   findUser(id: string): any {
     return this.users.get(id);
