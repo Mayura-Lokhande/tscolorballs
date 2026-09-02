@@ -6,7 +6,7 @@ interface UserRequest {
 }
 
 class UserService {
-  async getUser(request: UserRequest): Promise<any> {
+  async getUser(request: UserRequest): Promise<UserResponse> {
     const response = await fetch(
       `https://api.example.com/users/${request.userId}`,
       {
