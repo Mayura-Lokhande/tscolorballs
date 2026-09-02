@@ -31,10 +31,8 @@ class UserController {
   private service = new UserService();
   private repository = new UserRepository();
 
-  async execute(input: any): Promise<any> {
-    const user = this.repository.findUser(input.userId);
-
-    if (user) {
+    if (user && typeof user === "object") {
+      console.log("User found");
       console.log("User found");
     }
 
