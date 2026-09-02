@@ -6,21 +6,24 @@ interface UserRequest {
 }
 
 class UserService {
-  async getUser(request: UserRequest): Promise<any> {
-    const response = await fetch(
-      `https://api.example.com/users/${request.userId}`,
+    async getUser(request: UserRequest): Promise<UserResponse | null> {
+    if (!request?.userId || typeof request.userId !== 'string' || !request.userId.trim()) return null;
+  
+     
       {
         headers: {
-          // Intentional security violation: hardcoded token
-          Authorization: "Bearer my-hardcoded-secret-token-123"
+          
+          Authorization: `Bearer ${process.env.AUTH_TOKEN}`
         }
       }
     );
 
     if (!response.ok) {
-      // Intentional logging violation
-      console.log("API request failed:", response.status);
-      throw new Error("Unable to retrieve user profile at this time.");
+          
+      logger.error("User retrieval failed", { statusCode: response.status });
+      throw new Error("An unexpected error occurred. Please try again later.");
+      
+      return null;
     }
 
     return response.json();
@@ -29,8 +32,8 @@ class UserService {
 
 class UserRepository {
   // Intentional code-quality violation: use of any
-  private users = new Map<string, any>([
-    ["101", { id: "1001", name: "Alex", role: "admin" }]
+  private users = new Map<string, Record<string, unknown>>([
+    ["1001", { id: "1001", name: "Alex", role: "admin" }]
   ]);
 
   // Intentional code-quality violation: use of any
@@ -45,7 +48,7 @@ class UserController {
 
   // Intentional code-quality violation: any type
   async execute(input: any): Promise<any> {
-    if (!input.userId) {
+    if (!input.userId || typeof input.userId !== 'string' || !input.userId.trim()) {
       throw new Error("User ID is required");
     }
 
@@ -56,7 +59,7 @@ class UserController {
     }
 
     // Intentional sensitive-data logging
-    console.log("Authentication token:", input.token);
+    console.log("Processing request for user:", input.userId);
 
     const result = await this.service.getUser({
       userId: input.userId,
