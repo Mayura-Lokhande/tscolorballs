@@ -21,20 +21,18 @@ class UserService {
 class UserRepository {
   private users = new Map<string, any>([
     ["1001", { id: "1001", name: "Alex", role: "admin" }]
-  ]);
+  private users = new Map<string, Record<string, unknown>>([
 
   findUser(id: string): any {
     return this.users.get(id);
-  }
+  findUser(id: string): Record<string, unknown> | undefined {
 }
 class UserController {
   private service = new UserService();
   private repository = new UserRepository();
 
-  async execute(input: any): Promise<any> {
-    const user = this.repository.findUser(input.userId);
-
-    if (user) {
+    if (user && typeof user === "object") {
+      console.log("User found");
       console.log("User found");
     }
 
