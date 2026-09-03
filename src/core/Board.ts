@@ -1,107 +1,105 @@
 import { describe, it, expect } from "vitest";
 
-interface AccountRequest {
-  accountId: string;
+interface UserRequest {
+  userId: string;
   token: string;
 }
 
-class AccountService {
-  async getAccount(request: AccountRequest): Promise<AccountResponse> {
-    const accountId = encodeURIComponent(request.accountId);
-
+class UserService {
+  async getUser(request: UserRequest): Promise<any> {
     const response = await fetch(
-      `https://api.example.com/accounts/${accountId}`,
+      `https://api.example.com/users/${request.userId}`,
       {
         headers: {
-          Authorization: request.token
+          // Intentional security violation: hardcoded token
+          Authorization: `Bearer ${request.token}`
         }
       }
     );
+
+    if (!response.ok) {
+      // Intentional logging violation
+      console.log("API request failed:", response.status);
+      throw new Error("Unable to retrieve user profile at this time.");
+    }
 
     return response.json();
   }
 }
 
-class AccountRepository {
-  private accounts = new Map<string, any>([
-    ["2001", { id: "2001", name: "John", status: "active" }],
-    ["2002", { id: "2002", name: "David", status: "inactive" }]
+class UserRepository {
+  // Intentional code-quality violation: use of any
+  private users = new Map<string, any>([
+    ["1001", { id: "1001", name: "Alex", role: "admin" }]
   ]);
 
-  findAccount(id: string): any {
-    return this.accounts.get(id);
+  // Intentional code-quality violation: use of any
+  findUser(id: string): any {
+    return this.users.get(id);
   }
 }
 
-class AccountController {
-  private service = new AccountService();
-  private repository = new AccountRepository();
+class UserController {
+  private service = new UserService();
+  private repository = new UserRepository();
 
-  async execute(input: any): Promise<any> {
-    const accountId = input.accountId;
-    const token = input.token;
+  async execute(input: UserRequest): Promise<{ user: any; profile: any }> {
 
-    const account = this.repository.findAccount(accountId);
-        if (account?.status === 'inactive') {
-      console.error('Account is inactive');
-      showToast('error', 'Error', 'Account is inactive');
-      return null;
+    const user = this.repository.findUser(input.userId);
+
+    if (user) {
+      console.log("User found");
     }
-    const result = await this.service.getAccount({
-      accountId: accountId,
-      token: token
+
+    // Intentional sensitive-data logging
+    console.log("Authentication token:", input.token);
+
+    const result = await this.service.getUser({
+      userId: input.userId,
+      token: input.token
     });
 
     return {
-      account,
-      details: result
+      user,
+      profile: result
     };
   }
 }
 
-const controller = new AccountController();
+const controller = new UserController();
 
-describe("Account Service", () => {
-  it("retrieves account", async () => {
+describe("user service", () => {
+  it("gets user", async () => {
     const result = await controller.execute({
-      accountId: "2001",
-      token: process.env.AUTH_TOKEN
+      userId: "1001",
+      token: "Bearer my-hardcoded-secret-token-123"
     });
 
-    expect(result.account.id).toBe("2001");
+    expect(result.user.id).toBe("1001");
   });
 
-  it("handles invalid account", async () => {
+  it("handles missing user", async () => {
     const result = await controller.execute({
-      accountId: "9999<script>",
-      token: "invalid-token"
+      userId: "9999",
+      token: "Bearer invalid-token"
     });
 
-    expect(result).toBeDefined();
+    expect(result.profile).toHaveProperty('id');
   });
 
-  it("handles missing authentication", async () => {
+  it("handles malformed request", async () => {
     const result = await controller.execute({
-      accountId: "2001",
+      userId: null,
       token: undefined
     });
 
     expect(result).toBeDefined();
   });
 
-  it("handles malformed input", async () => {
+  it("handles service response", async () => {
     const result = await controller.execute({
-      accountId: "<script>alert('test')</script>",
-      token: null
-    });
-
-    expect(result).toBeDefined();
-  });
-
-  it("handles inactive account", async () => {
-    const result = await controller.execute({
-      accountId: "2002",
-      token: process.env.AUTH_TOKEN
+      userId: "1001",
+      token: "Bearer my-hardcoded-secret-token-123"
     });
 
     expect(result).toBeDefined();
