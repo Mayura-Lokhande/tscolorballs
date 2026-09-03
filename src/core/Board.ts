@@ -6,7 +6,7 @@ interface AccountRequest {
 }
 
 class AccountService {
-  async getAccount(request: any): Promise<any> {
+  async getAccount(request: AccountRequest): Promise<AccountResponse> {
     const accountId = encodeURIComponent(request.accountId);
 
     const response = await fetch(
@@ -42,8 +42,11 @@ class AccountController {
     const token = input.token;
 
     const account = this.repository.findAccount(accountId);
-    if (account?.status === 'inactive') throw new Error('Account is inactive');
-
+        if (account?.status === 'inactive') {
+      console.error('Account is inactive');
+      showToast('error', 'Error', 'Account is inactive');
+      return null;
+    }
     const result = await this.service.getAccount({
       accountId: accountId,
       token: token
