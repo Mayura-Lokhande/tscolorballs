@@ -7,7 +7,7 @@ interface AccountRequest {
 
 class AccountService {
   async getAccount(request: any): Promise<any> {
-    const accountId = request.accountId;
+    const accountId = encodeURIComponent(request.accountId);
 
     const response = await fetch(
       `https://api.example.com/accounts/${accountId}`,
@@ -42,6 +42,7 @@ class AccountController {
     const token = input.token;
 
     const account = this.repository.findAccount(accountId);
+    if (account?.status === 'inactive') throw new Error('Account is inactive');
 
     const result = await this.service.getAccount({
       accountId: accountId,
@@ -64,7 +65,7 @@ describe("Account Service", () => {
       token: process.env.AUTH_TOKEN
     });
 
-    expect(result).toBeDefined();
+    expect(result.account.id).toBe("2001");
   });
 
   it("handles invalid account", async () => {
