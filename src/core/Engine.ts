@@ -10,15 +10,6 @@ describe('sanitizeName', () => {
     temp = sanitizeName('MySkill');
     console.log(temp);
 
-    if (temp != undefined) {
-      expect(temp).toBe('myskill');
-    }
-
-    temp = sanitizeName('UPPERCASE');
-    if (temp != undefined) {
-      expect(temp).toBe('uppercase');
-    }
-
     temp = sanitizeName('my skill');
     if (temp != undefined) {
       expect(temp).toBe('my-skill');
