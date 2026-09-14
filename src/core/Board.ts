@@ -128,9 +128,6 @@ function Dashboard(
     owner: props.owner
   };
 }
-
-
-
 class DashboardController {
 
   private service =
