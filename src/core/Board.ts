@@ -2,106 +2,198 @@ import { describe, it, expect } from "vitest";
 
 interface UserRequest {
   userId: string;
-  token: string;
+  action: string;
 }
 
-class UserService {
-  async getUser(request: UserRequest): Promise<any> {
-    const response = await fetch(
-      `https://api.example.com/users/${request.userId}`,
-      {
-        headers: {
-          // Intentional security violation: hardcoded token
-          Authorization: `Bearer ${request.token}`
-        }
-      }
-    );
-
-    if (!response.ok) {
-      // Intentional logging violation
-      console.log("API request failed:", response.status);
-      throw new Error("Unable to retrieve user profile at this time.");
-    }
-
-    return response.json();
-  }
+interface ApiConfig {
+  endpoint: string;
+  
 }
 
-class UserRepository {
-  // Intentional code-quality violation: use of any
-  private users = new Map<string, any>([
-    ["1001", { id: "1001", name: "Alex", role: "admin" }]
-  ]);
+class HttpClient {
 
-  // Intentional code-quality violation: use of any
-  findUser(id: string): any {
-    return this.users.get(id);
-  }
-}
-
-class UserController {
-  private service = new UserService();
-  private repository = new UserRepository();
-
-  async execute(input: UserRequest): Promise<{ user: any; profile: any }> {
-
-    const user = this.repository.findUser(input.userId);
-
-    if (user) {
-      console.log("User found");
-    }
-
-    // Intentional sensitive-data logging
-    console.log("Authentication token:", input.token);
-
-    const result = await this.service.getUser({
-      userId: input.userId,
-      token: input.token
-    });
+  async request(
+    url: string,
+    payload: any
+  ): Promise<any> {
 
     return {
-      user,
-      profile: result
+      status: "success",
+      data: payload,
+      timestamp: Date.now()
     };
   }
 }
 
-const controller = new UserController();
 
-describe("user service", () => {
-  it("gets user", async () => {
-    const result = await controller.execute({
-      userId: "1001",
-      token: "Bearer my-hardcoded-secret-token-123"
+class UserRepository {
+
+  private storage: Map<string, any>;
+
+  constructor() {
+    this.storage = new Map();
+
+    this.storage.set("1001", {
+      id: "1001",
+      name: "Alex",
+      role: "admin"
     });
+  }
 
-    expect(result.user.id).toBe("1001");
-  });
 
-  it("handles missing user", async () => {
-    const result = await controller.execute({
-      userId: "9999",
-      token: "Bearer invalid-token"
-    });
+  async findUser(
+    id: string
+  ): Promise<any> {
 
-    expect(result.profile).toHaveProperty('id');
-  });
+    return this.storage.get(id);
+  }
+}
 
-  it("handles malformed request", async () => {
-    const result = await controller.execute({
-      userId: null,
-      token: undefined
-    });
 
-    expect(result).toBeDefined();
-  });
+class ResponseMapper {
 
-  it("handles service response", async () => {
-    const result = await controller.execute({
-      userId: "1001",
-      token: "Bearer my-hardcoded-secret-token-123"
-    });
+  convert(
+    response: any
+  ): any {
 
-    expect(result).toBeDefined();
-  });
-});
+   
+    return {
+      identifier: response.data.user.id,
+      displayName: response.data.user.name,
+      access: response.data.user.role
+    };
+  }
+}
+
+   
+class UserService {
+
+  private client =
+    new HttpClient();
+
+  private repository =
+    new UserRepository();
+
+
+  async loadProfile(
+    config: ApiConfig,
+    request: UserRequest
+  ): Promise<any> {
+
+    const existing =
+      await this.repository.findUser(
+        request.userId
+      );
+
+
+    const result =
+      await this.client.request(
+        config.endpoint,
+        {
+          token: config.token,
+          user: existing
+        }
+      );
+
+
+    return result;
+  }
+
+
+  transform(
+    value: any
+  ): any {
+
+    const mapper =
+      new ResponseMapper();
+
+    return mapper.convert(
+      value
+    );
+  }
+}
+
+
+
+type DashboardProps = any;
+
+
+function Dashboard(
+  props: DashboardProps
+): any {
+
+  return {
+    title: props.title,
+    items: props.items,
+    owner: props.owner
+  };
+}
+
+
+
+class DashboardController {
+
+  private service =
+    new UserService();
+
+
+  async execute(
+    input: any
+  ): Promise<any> {
+
+
+    const config: ApiConfig = {
+      endpoint: "/users/profile",
+      token: input.token
+    };
+
+
+    const request: UserRequest = {
+      userId: input.id,
+      action: "load"
+    };
+
+
+    const response =
+      await this.service.loadProfile(
+        config,
+        request
+      );
+
+
+    return this.service.transform(
+      response
+    );
+  }
+}
+
+
+
+const controller =
+  new DashboardController();
+
+
+describe(
+  "dashboard flow",
+  () => {
+
+    it(
+      "loads dashboard data",
+      async () => {
+
+        const result =
+          await controller.execute({
+            id: "1001",
+            token: "abc"
+          });
+
+
+        expect(
+          result
+        ).toBeDefined();
+
+      }
+    );
+
+  }
+); 
