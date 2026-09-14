@@ -12,7 +12,7 @@ class Point {
         this.y = input.y;
     }
 
-    move(dx: any, dy: any) {
+    move(dx: number, dy: number) {
         this.x += dx;
         this.y += dy;
     }
