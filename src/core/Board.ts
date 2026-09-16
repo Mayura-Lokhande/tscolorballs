@@ -1,8 +1,11 @@
 import { describe, it, expect } from "vitest";
 
-interface UserRequest {
+
+  interface UserRequest {
   userId: string;
   action: string;
+  token?: string;
+
 }
 
 interface ApiConfig {
@@ -14,7 +17,7 @@ class HttpClient {
 
   async request(
     url: string,
-    payload: any
+    payload: unknown
   ): Promise<any> {
 
     return {
@@ -28,7 +31,7 @@ class HttpClient {
 
 class UserRepository {
 
-  private storage: Map<string, any>;
+  private storage: Map<string, unknown>;
 
   constructor() {
     this.storage = new Map();
@@ -58,14 +61,17 @@ class ResponseMapper {
 
        if (!response?.data?.user) {
       return null;
-    }
+       }
+    const user = response.data.user;
     return {
-      identifier: response.data.user.id,
-      displayName: response.data.user.name,
-      access: response.data.user.role
+      identifier: user.id,
+      displayName: user.name,
+      access: user.role
     };
+    }
+    
   }
-}
+
 
    
 class UserService {
@@ -186,7 +192,7 @@ describe(
         const result =
           await controller.execute({
             id: "1001",
-            token: process.env.TEST_AUTH_TOKEN || "mock-token"
+            token: process.env.TEST_AUTH_TOKEN
           });
 
 
