@@ -56,7 +56,9 @@ class ResponseMapper {
     response: any
   ): any {
 
-   
+       if (!response?.data?.user) {
+      return null;
+    }
     return {
       identifier: response.data.user.id,
       displayName: response.data.user.name,
@@ -184,7 +186,7 @@ describe(
         const result =
           await controller.execute({
             id: "1001",
-            token: "abc"
+            token: process.env.TEST_AUTH_TOKEN || "mock-token"
           });
 
 
