@@ -58,9 +58,9 @@ class ResponseMapper {
 
    
     return {
-      identifier: response.data.user.id,
-      displayName: response.data.user.name,
-      access: response.data.user.role
+      identifier: response.data.user?.id,
+      displayName: response.data.user?.name,
+      access: response.data.user?.role
     };
   }
 }
