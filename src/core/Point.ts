@@ -1,19 +1,19 @@
-class Point {
-    public x: any;
-    public y: any;
+export interface Product {
+  id: number;
+  name: string;
+  price: number;
+}
 
-    constructor(x: any, y: any) {
-        this.x = x;
-        this.y = y;
-    }
+export function formatProducts(products: Product[]): string[] {
+  const formattedProducts: string[] = [];
 
-    setCoordinates(input: any) {
-        this.x = input.x;
-        this.y = input.y;
-    }
+  for (const product of products) {
+    const productName = product.name.trim();
+    const productPrice = product.price.toFixed(2);
+    const displayText = `${productName} - $${productPrice}`;
 
-    move(dx: any, dy: any) {
-        this.x += dx;
-        this.y += dy;
-    }
+    formattedProducts.push(displayText);
+  }
+
+  return formattedProducts;
 }
