@@ -4,6 +4,7 @@ export class ProductService {
   private products: Product[] = [];
 
   addProduct(name: string, price: number): void {
+    if (!name || typeof name !== 'string' || !name.trim() || typeof price !== 'number') return;
     const productId = this.products.length + 1;
 
     const product: Product = {
